@@ -1,0 +1,82 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24'
+
+      # === FRONTEND ===
+      - name: Install frontend dependencies
+        run: |
+          cd frontend && npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm run build
+
+      # === CORE ===
+      - name: Install core dependencies
+        run: |
+          cd core && npm ci
+
+      - name: Build core
+        run: |
+          cd core && npm run build
+
+      # === APP ===
+      - name: Install app dependencies
+        run: |
+          cd app && npm ci
+
+      # Copy frontend and core dist into app
+      - name: Copy core dist into app
+        run: |
+          cp -r ../core/dist ./app/
+
+      - name: Copy frontend dist into app as static
+        run: |
+          rm -rf ./app/static
+          cp -r ../frontend/dist ./app/static
+
+      - name: Build app
+        run: |
+          cd app && npm run build
+
+      # Zip app dist for release
+      - name: Zip app dist
+        run: |
+          cd app && zip -r dist.zip dist
+
+      # Create GitHub release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      # Upload release asset
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/dist.zip
+          asset_name: app-dist.zip
+          asset_content_type: application/zip
