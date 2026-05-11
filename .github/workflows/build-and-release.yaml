@@ -85,35 +85,9 @@ jobs:
             zip -r electron-win.zip dist/win-unpacked
           fi
 
-      - name: ls app dist
-        run: |
-          cd app/dist && ls -l
-
-      # - name: Upload build artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build-output
-      #     path: dist/
-
-      # Create GitHub release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
-
-      # Upload release asset
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ matrix.platform == 'mac' && 'app/electron-mac.zip' || 'app/electron-win.zip' }}
-          asset_name: ${{ matrix.platform == 'mac' && 'electron-mac.zip' || 'electron-win.zip' }}
-          asset_content_type: application/zip
+          name: build-output
+          path: ${{ matrix.platform == 'mac' && 'app/electron-mac.zip' || 'app/electron-win.zip' }}
+          archive: false
