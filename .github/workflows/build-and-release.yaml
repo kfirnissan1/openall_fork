@@ -6,13 +6,17 @@ on:
       - main
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
         platform: [mac, windows]
-    runs-on: ${{ matrix.platform == 'mac' && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.platform == 'mac' && 'macos-latest' || 'windows-latest' }}
     steps:
       # 1. Checkout code
       - name: Checkout code
@@ -50,14 +54,6 @@ jobs:
       - name: Install app dependencies
         run: |
           cd app && npm ci
-
-      - name: Install Wine (Linux only)
-        if: matrix.platform == 'windows'
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y wine64 wine32
-          wine --version
 
       - name: Build app
         shell: bash
