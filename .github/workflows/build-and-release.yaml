@@ -57,8 +57,9 @@ jobs:
           cp -r ./frontend/dist ./app/static
 
       - name: Build app
+        shell: bash
         run: |
-          cd app && |
+          cd app && 
           if [ "${{ matrix.platform }}" == "mac" ]; then
             npm run build:mac
           else
@@ -68,7 +69,7 @@ jobs:
       # Zip app dist for release
       - name: Zip app dist
         run: |
-          cd app && |
+          cd app && 
           if [ "${{ matrix.platform }}" == "mac" ]; then
             zip -r electron-mac.zip dist/mac
           else
