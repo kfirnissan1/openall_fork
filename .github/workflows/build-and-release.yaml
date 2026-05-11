@@ -72,7 +72,7 @@ jobs:
           if [ "${{ matrix.platform }}" == "mac" ]; then
             zip -r electron-mac.zip dist/mac-arm64
           else
-            zip -r electron-win.zip dist/win-unpacked
+            powershell -Command "Compress-Archive -Path 'dist/win-unpacked/*' -DestinationPath 'electron-win.zip'"
           fi
 
       - name: Upload build artifacts
