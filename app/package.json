@@ -14,6 +14,9 @@
         "build:win": "electron-builder --win",
         "build:mac": "electron-builder --mac"
     },
+    "dependencies": {
+        "@openall-ai/core": "^0.0.1"
+    },
     "devDependencies": {
         "concurrently": "^9.2.1",
         "cross-env": "^10.1.0",
@@ -24,6 +27,7 @@
     "build": {
         "appId": "com.openall.app",
         "productName": "open/all",
+        "npmRebuild": false,
         "directories": {
             "output": "dist"
         },
