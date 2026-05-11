@@ -9,7 +9,9 @@
     "scripts": {
         "dev": "vite",
         "start": "electron .",
-        "build": "electron-builder"
+        "build": "electron-builder",
+        "build:win": "electron-builder --win",
+        "build:mac": "electron-builder --mac"
     },
     "devDependencies": {
         "concurrently": "^9.2.1",

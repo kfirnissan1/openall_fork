@@ -73,11 +73,10 @@ jobs:
           if [ "${{ matrix.platform }}" == "mac" ]; then
             zip -r electron-mac.zip dist/mac
           else
-            zip -r electron-win.zip dist/win
+            zip -r electron-win.zip dist/win-unpacked
           fi
 
-          
-      - name: Zip app dist
+      - name: ls app dist
         run: |
           cd app/dist && ls -l
 
