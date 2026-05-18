@@ -76,7 +76,7 @@ let App = observer(() => {
             <div className="fixed left-4 top-4 text-4xl text-zinc-300/20 font-black pointer-events-none select-none">
                 open/all
             </div>
-            <Navbar />
+            {counterStore.initialized ? <Navbar /> : <></>}
             {counterStore.showConfig ? <ConfigBox /> : <></>}
             <ChatBox />
             {counterStore.showSettings ? <SettingsBox /> : <></>}

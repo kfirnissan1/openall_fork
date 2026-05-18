@@ -1,23 +1,45 @@
 import { observer } from "mobx-react-lite";
 import DraggableWindow from "../draggable-window";
 import { counterStore } from "../chat-box";
+import { makeAutoObservable } from "mobx";
 
+class ConfigStore {
+    constructor() {
+        makeAutoObservable(this);
+    }
+
+    selectedProvider = 'openrouter';
+    modelsLoaded = false;
+
+    selectProvider(provider: string) {
+        this.selectedProvider = provider;
+        this.modelsLoaded = false;
+    }
+
+    loadModels() {
+        this.modelsLoaded = true;
+    }
+}
+
+export const configStore = new ConfigStore();
 
 export const ConfigContent = observer(() => {
-
-    let selectedProvider = 'openrouter';
     let apiKey = '';
     return <>
-        <div className="flex flex-col gap-6 text-sm text-zinc-800">
+        <div className="flex flex-col gap-2 text-sm text-zinc-800">
+
+            <div>
+                Connect open/all to a provider of your choice. You can choose between local AI options or various cloud providers. <br/>After selecting a provider, 
+                you'll be able to choose from the different models this provider hosts.
+            </div>
 
             <div className="flex flex-col gap-2">
                 <label className="text-zinc-600 font-medium">Provider</label>
-                <select id="provider" onChange={e => selectedProvider = e.target.value} defaultValue={selectedProvider}
-                    className="px-3 py-2 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40">
+                <select id="provider" onChange={e => configStore.selectProvider(e.target.value)} defaultValue={configStore.selectedProvider}
+                    className="px-2 py-2 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40">
                     <option value="openrouter">OpenRouter</option>
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic</option>
-                    <option value="google">Google (Gemini)</option>
                 </select>
             </div>
 
@@ -27,65 +49,37 @@ export const ConfigContent = observer(() => {
                     className="px-3 py-2 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40" />
             </div>
 
-            {/* <div className="flex flex-col gap-2 relative">
-                <label className="text-zinc-600 font-medium">Model</label>
-
-                <input id="modelSearch" type="text" placeholder="Search models..."
-                    className="px-3 py-2 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40" />
-
-                <div id="modelDropdown" onFocus={() => selectingModel = true}
-                    className={`absolute top-[72px] w-full max-h-48 overflow-y-auto rounded-xl bg-white/70 backdrop-blur border border-white/40 shadow-lg ${selectingModel ? '' : 'hidden'} z-10`}>
-
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">openai/gpt-4o</div>
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">openai/gpt-4.1</div>
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">anthropic/claude-3-opus</div>
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">anthropic/claude-3-sonnet</div>
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">google/gemini-pro</div>
-                    <div className="model-option px-3 py-2 hover:bg-blue-500/10 cursor-pointer">meta/llama-3-70b</div>
-
-                </div>
-            </div> */}
 
             <div className="pt-2">
-                <button onClick={() => counterStore.saveConfig({ provider: selectedProvider, apiKey, })}
+                <button onClick={e => configStore.loadModels()}
+                    className="w-full py-2 rounded-xl bg-gray-900/80 hover:bg-gray-900 text-white font-medium shadow-md transition">
+                    Load Models
+                </button>
+            </div>
+
+            <div className="flex flex-col gap-2 relative">
+                <label className="text-zinc-600 font-medium">Model</label>
+
+                <select id="provider" disabled={!configStore.modelsLoaded}
+                    className="px-2 py-2 disabled:bg-gray-300/60 disabled:text-gray-500 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40">
+                    <option value="-">Model list not loaded...</option>
+                    <option value="openai/gpt-4o">openai/gpt-4o</option>
+                    <option value="openai/gpt-4.1">openai/gpt-4.1</option>
+                    <option value="anthropic/claude-3-opus">anthropic/claude-3-opus</option>
+                    <option value="anthropic/claude-3-sonnet">anthropic/claude-3-sonnet</option>
+                    <option value="google/gemini-pro">google/gemini-pro</option>
+                    <option value="meta/llama-3-70b">meta/llama-3-70b</option>
+                </select>
+            </div>
+
+            <div className="pt-2">
+                <button onClick={() => counterStore.saveConfig({ provider: configStore.selectedProvider, apiKey, })}
                     className="w-full py-2 rounded-xl bg-gray-900/80 hover:bg-gray-900 text-white font-medium shadow-md transition">
                     Save Configuration
                 </button>
             </div>
 
         </div>
-        {/*
-        <script>
-            const searchInput = document.getElementById('modelSearch');
-            const dropdown = document.getElementById('modelDropdown');
-            const options = document.querySelectorAll('.model-option');
-
-  searchInput.addEventListener('focus', () => {
-                dropdown.classList.remove('hidden');
-  });
-
-  searchInput.addEventListener('input', () => {
-    const value = searchInput.value.toLowerCase();
-
-    options.forEach(opt => {
-      const text = opt.textContent.toLowerCase();
-            opt.style.display = text.includes(value) ? 'block' : 'none';
-    });
-  });
-
-  options.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    searchInput.value = opt.textContent;
-                    dropdown.classList.add('hidden');
-                });
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-    }
-  });
-        </script> */}
     </>;
 });
 
@@ -94,7 +88,7 @@ export const ConfigBox = observer(() => {
 
     return (<>
         <div>
-            <DraggableWindow loading={false} data={m} modal={true} minimized={m.minimized} windowKey={'win' + m.id} key={'win' + m.id} title={m.title} h={310} w={400}>
+            <DraggableWindow loading={false} data={m} modal={true} minimized={m.minimized} windowKey={'win' + m.id} key={'win' + m.id} title={m.title} h={490} w={600}>
                 <ConfigContent />
             </DraggableWindow>
         </div>
