@@ -1,6 +1,6 @@
 {
     "name": "@openall-ai/app",
-    "version": "0.0.0",
+    "version": "0.2.0",
     "private": true,
     "description": "a helpful assistant",
     "license": "PolyForm Noncommercial",
@@ -15,7 +15,7 @@
         "build:mac": "electron-builder --mac"
     },
     "dependencies": {
-        "@openall-ai/core": "^0.0.1"
+        "@openall-ai/core": "^0.2.0"
     },
     "devDependencies": {
         "concurrently": "^9.2.1",
