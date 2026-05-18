@@ -29,7 +29,7 @@ const openHtmlViewTool = {
                 },
                 content: {
                     type: "string",
-                    description: "The HTML content for the view to be shown. Should be a <div> tag. Use tailwindcss for styling. The background is already set to gray-100 and padding is applied in the parent. You don't need to set this for the content. Do not wrap in `. Call global js function doAction() with parameters describing what should be done to perform actions in handlers (buttons, etc)."
+                    description: "The HTML content for the view to be shown. Should be a <div> tag. Use tailwindcss for styling. The background is already set to gray-100 and padding is applied in the parent. You don't need to set this for the content. Do not wrap in `. Call global js function doAction() with parameters describing what should be done to perform actions in handlers (buttons, etc). Do not add <script> tags just call doAction in a click handler etc. Do not enter dynamic content in the doAction params they are fetched for you just describe the action taken."
                 },
             },
             required: ["content"]
@@ -65,6 +65,7 @@ export class ChatService {
     ) {
     }
 
+    private clients: Client[] = [];
     private conversationId = 'jmcuc';
 
     private prompts = {
@@ -72,6 +73,173 @@ export class ChatService {
         uiActionPrompt: `The user has performed an action using doAction() with the following args. You'll need to decide what to do. Most likely you'll update the
             currently active window but not necessarily. The active window has ID %ACTIVEWINDOWID% and its current HTML content is %WINDOWCONTENT%. The user performed an action with
             payload %DATAPAYLOAD%. The current form inputs for the window (their current state is): %FORMINPUTS%. Always ground your answers in real data from the database. If a table doesn't exist you may need to create it.`
+    }
+
+    async handleConnection(client: Client) {
+        console.log('client connected');
+
+        const existingConfig = await this.chatConfigRepo.findOne({
+            where: {
+                id: 0,
+            }
+        });
+
+        if (!existingConfig) {
+            client.send(JSON.stringify({ event: 'showConfig', data: {} }));
+        } else {
+            this.initializeState(client);
+        }
+
+        return;
+    }
+
+    handleDisconnect(client: Client) {
+        this.clients = this.clients.filter(c => c !== client);
+    }
+
+    async handleMessage(client: Client, message: { event: string, data: any, }) {
+        switch (message.event) {
+            case 'config':
+                await this.handleConfig(client, message.data);
+                break;
+            case 'doAction':
+                await this.handleDoAction(message.data);
+                break;
+            case 'chat':
+                await this.handleChat(message.data);
+                break;
+            case 'close':
+                await this.handleClose(message.data);
+                break;
+            default:
+                console.log('unknown message ', message.event);
+                break;
+        }
+    }
+
+    async initializeState(client: Client) {
+        const prompts = await this.getPrompts();
+        client.send(JSON.stringify({ event: 'settings', data: { prompts, } }));
+
+        const history = await this.getChatHistory();
+        for (let item of history) {
+            client.send(JSON.stringify({ event: 'message', data: { content: item.content, from: item.user === null ? 'James' : item.user, } }));
+        }
+
+        let windows = await this.windowStateRepo.find({
+            where: { conversationId: this.conversationId, },
+        });
+
+        for (let window of windows) {
+            client.send(JSON.stringify({ event: 'ui', data: { id: window.id, content: window.content, title: window.title, } }));
+        }
+
+        this.clients.push(client);
+    }
+
+    async handleConfig(client: Client, data: any) {
+        if (data.apiKey) {
+            await keytar.setPassword('openall', data.provider, data.apiKey);
+        }
+        const existingConfig = await this.chatConfigRepo.findOne({ where: { id: 0, }, });
+        if (existingConfig) {
+            existingConfig.provider = data.provider;
+            await this.chatConfigRepo.save(existingConfig);
+        } else {
+            const newConfig = this.chatConfigRepo.create({ id: 0, provider: data.provider, });
+            await this.chatConfigRepo.save(newConfig);
+        }
+        if (!this.clients.includes(client)) {
+            await this.initializeState(client);
+        }
+    }
+
+    getDoActionPrompt(activeWindowId: number, windowContent: string, dataArgsJson: string, dataInputJson: string) {
+        let prompt = this.prompts.uiActionPrompt;
+
+        prompt = prompt.replace(/\%ACTIVEWINDOWID\%/g, activeWindowId.toString());
+        prompt = prompt.replace(/\%WINDOWCONTENT\%/g, windowContent);
+        prompt = prompt.replace(/\%DATAPAYLOAD\%/g, dataArgsJson);
+        prompt = prompt.replace(/\%FORMINPUTS\%/g, dataInputJson);
+
+        return prompt;
+    }
+
+    async handleDoAction(data: { activeWindowId: number, inputs: { [key: string]: string }, args: any[], }) {
+        console.log(data);
+        const windowContent = await this.getWindowContent(data.activeWindowId);
+
+        console.log(windowContent?.length);
+
+        const history = await this.getChatHistory();
+
+        let messages = history.map(h => ({ role: h.user ? 'user' : 'assistant', content: h.content, }));
+
+        const uiActionPrompt = this.getDoActionPrompt(data.activeWindowId, windowContent || '<empty />', JSON.stringify(data.args), JSON.stringify(data.inputs));
+        messages.push({
+            role: 'user', content: uiActionPrompt,
+        })
+
+        for (let i = 0; i < 10; ++i) {
+            const response = await this.runAi(messages);
+
+            if (response && response.tools) {
+                console.log('tool call', response.tools);
+                for (let toolResponse of response.tools) {
+                    await this.handleToolCall(toolResponse, messages, this.clients);
+                }
+            } else {
+                // const responseItem = { content: response!.content, from: 'James' };
+                // history.push(this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, }));
+                // const agentMessage = this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, conversationId: this.conversationId, });
+                // await this.chatHistoryRepo.save(agentMessage);
+                // this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: responseItem })));
+
+                console.log(response!.content);
+                break;
+            }
+        }
+    }
+
+    async handleChat(data: string) {
+        console.log(data);
+
+        const userMessage = this.chatHistoryRepo.create({ content: data, conversationId: this.conversationId, user: 'You', });
+        await this.chatHistoryRepo.save(userMessage);
+        this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: { content: data, from: 'You' } })));
+        this.clients.forEach(c => c.send(JSON.stringify({ event: 'typing', data: ['James'], })));
+
+        const history = await this.getChatHistory();
+
+        let messages = history.map(h => ({ role: h.user ? 'user' : 'assistant', content: h.content, }));
+
+        for (let i = 0; i < 10; ++i) {
+            const response = await this.runAi(messages);
+
+            if (response && response.tools) {
+                for (let toolResponse of response.tools) {
+                    await this.handleToolCall(toolResponse, messages, this.clients);
+                }
+            } else {
+                const responseItem = { content: response!.content, from: 'James' };
+                history.push(this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, }));
+                const agentMessage = this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, conversationId: this.conversationId, });
+                await this.chatHistoryRepo.save(agentMessage);
+                this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: responseItem })));
+
+                break;
+            }
+        }
+    }
+
+    async handleClose(data: number ) {
+        console.log('close', data);
+
+        const existingWindow = await this.windowStateRepo.findOneBy({ id: data, });
+        if (existingWindow) {
+            await this.windowStateRepo.remove(existingWindow);
+            this.clients.forEach(c => c.send(JSON.stringify({ event: 'closeWindow', data: { id: data, } })));
+        }
     }
 
     async getPrompts() {
@@ -159,14 +327,11 @@ export class ChatService {
     }
 
     async handleToolCall(toolResponse: any, messages: any[], clients: Client[]) {
-        if (toolResponse.command || toolResponse.query) {
+        if (toolResponse.query) {
 
             clients.forEach(c => c.send(JSON.stringify({ event: 'log', data: { content: toolResponse.query }, })));
             try {
-                let result;
-                if (toolResponse.query) {
-                    result = await this.databaseService.query(toolResponse.query);
-                }
+                let result = await this.databaseService.query(toolResponse.query);
 
                 const newMessage = {
                     role: "tool",
@@ -174,7 +339,7 @@ export class ChatService {
                     content: JSON.stringify(result || 'no output'),
                 };
 
-                console.log(newMessage, toolResponse.command || toolResponse.query, result);
+                console.log(newMessage, toolResponse.query, result);
 
                 messages.push(newMessage);
             } catch (e: any) {

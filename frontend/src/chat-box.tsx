@@ -48,6 +48,10 @@ class CounterStore {
             this.showConfig = true;
             return;
         }
+        if (eventData.event === 'closeWindow') {
+            this.windows = this.windows.filter(w => w.id !== eventData.data.id);
+            return;
+        }
         if (eventData.event === 'log') {
             this.messages.push({ log: eventData.data.content, });
             return;
@@ -72,8 +76,6 @@ class CounterStore {
     }
 
     closeWindow(id: number) {
-        console.log(this.windows.filter(w => w.id !== id));
-        this.windows = this.windows.filter(w => w.id !== id);
         this.connection.then(c => c.closeWindow(id));
     }
 

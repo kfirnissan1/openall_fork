@@ -45,8 +45,11 @@ async function init() {
     });
 
     ipcMain.handle('chat-service:connect', async (_event, payload) => {
-        console.log(chatGateway);
         return await chatGateway.handleConnection(client);
+    });
+
+    ipcMain.handle('chat-service:close', async (_event, payload) => {
+        return await chatGateway.handleClose(payload, client);
     });
 
     ipcMain.handle('chat-service:doAction', async (_event, payload) => {

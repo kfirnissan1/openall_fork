@@ -78,7 +78,7 @@ let App = observer(() => {
             </div>
             {counterStore.initialized ? <Navbar /> : <></>}
             {counterStore.showConfig ? <ConfigBox /> : <></>}
-            <ChatBox />
+            {counterStore.initialized ? <ChatBox /> : <></>}
             {counterStore.showSettings ? <SettingsBox /> : <></>}
             {/* <MessageList /> */}
             <MinimizedList />

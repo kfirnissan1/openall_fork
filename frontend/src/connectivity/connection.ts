@@ -87,10 +87,15 @@ export class Connection {
     }
 
     async closeWindow(windowId: number) {
-        this.ws.send(JSON.stringify({
-            event: 'close',
-            data: windowId,
-        }));
+        const api = (window as any).api;
+        if (api) {
+            await api.close(windowId);
+        } else {
+            this.ws.send(JSON.stringify({
+                event: 'close',
+                data: windowId,
+            }));
+        }
     }
 
     async saveConfig(config: { provider: string, apiKey: string, }) {

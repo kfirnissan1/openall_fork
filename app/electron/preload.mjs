@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("api", {
     chat: (payload) => ipcRenderer.invoke('chat-service:chat', payload),
     config: (payload) => ipcRenderer.invoke('chat-service:config', payload),
     connect: (payload) => ipcRenderer.invoke('chat-service:connect', payload),
+    close: (payload) => ipcRenderer.invoke('chat-service:close', payload),
     doAction: (payload) => ipcRenderer.invoke('chat-service:doAction', payload),
 
     onMessage: (callback) => {
