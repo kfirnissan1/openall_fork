@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [mac, windows]
-    runs-on: ${{ matrix.platform == 'mac' && 'macos-latest' || 'windows-latest' }}
+        platform: [mac, mac64, windows]
+    runs-on: ${{ matrix.platform == 'mac' && 'macos-latest' || matrix.platform == 'mac64' && 'macos-15-intel' || 'windows-latest' }}
     steps:
       # 1. Checkout code
       - name: Checkout code
@@ -61,6 +61,8 @@ jobs:
           cd app && 
           if [ "${{ matrix.platform }}" == "mac" ]; then
             npm run build:mac
+          else if [ "${{ matrix.platform }}" == "mac64" ]; then
+            npm run build:mac64
           else
             npm run build:win
           fi
@@ -71,6 +73,8 @@ jobs:
           cd app && 
           if [ "${{ matrix.platform }}" == "mac" ]; then
             zip -r electron-mac.zip dist/mac-arm64
+          else if [ "${{ matrix.platform }}" == "mac64" ]; then
+            zip -r electron-mac64.zip dist/mac-x64
           else
             powershell -Command "Compress-Archive -Path 'dist/win-unpacked/*' -DestinationPath 'electron-win.zip'"
           fi
@@ -79,5 +83,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: build-output
-          path: ${{ matrix.platform == 'mac' && 'app/electron-mac.zip' || 'app/electron-win.zip' }}
+          path: ${{ matrix.platform == 'mac' && 'app/electron-mac.zip' || matrix.platform == 'mac64' && 'app/electron-mac64.zip' || 'app/electron-win.zip' }}
           archive: false

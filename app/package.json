@@ -12,7 +12,8 @@
         "start": "electron .",
         "build": "electron-builder",
         "build:win": "electron-builder --win",
-        "build:mac": "electron-builder --mac --universal"
+        "build:mac": "electron-builder --mac",
+        "build:mac64": "electron-builder --mac --x64"
     },
     "dependencies": {
         "@openall-ai/core": "^0.2.0"
