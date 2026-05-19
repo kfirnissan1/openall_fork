@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld("api", {
     close: (payload) => ipcRenderer.invoke('chat-service:close', payload),
     doAction: (payload) => ipcRenderer.invoke('chat-service:doAction', payload),
 
+    sendMessage: (msgType, data) => ipcRenderer.invoke('chat-service:sendMessage', { msgType, data }),
+
     onMessage: (callback) => {
         ipcRenderer.on('ws:event', (_event, data) => {
             console.log(data);

@@ -56,6 +56,10 @@ async function init() {
         return await chatGateway.handleAction(payload);
     });
 
+    ipcMain.handle('chat-service:doAction', async (_event, { msgType, data, }) => {
+        return await chatGateway.handleMessage(msgType, data, client);
+    });
+
     app.whenReady().then(createWindow);
 }
 

@@ -18,6 +18,7 @@ class ConfigStore {
 
     loadModels(apiKey: string) {
         this.modelsLoaded = true;
+        counterStore.sendMessage('loadModels', { provider: this.selectedProvider, apiKey, });
     }
 }
 
@@ -29,7 +30,7 @@ export const ConfigContent = observer(() => {
         <div className="flex flex-col gap-2 text-sm text-zinc-800">
 
             <div>
-                Connect open/all to a provider of your choice. You can choose between local AI options or various cloud providers. <br/>After selecting a provider, 
+                Connect open/all to a provider of your choice. You can choose between local AI options or various cloud providers. <br />After selecting a provider,
                 you'll be able to choose from the different models this provider hosts.
             </div>
 
@@ -48,7 +49,6 @@ export const ConfigContent = observer(() => {
                 <input type="password" placeholder="sk-..." onChange={(e) => apiKey = e.target.value}
                     className="px-3 py-2 rounded-xl bg-white/60 backdrop-blur border border-white/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40" />
             </div>
-
 
             <div className="pt-2">
                 <button onClick={() => configStore.loadModels(apiKey)}

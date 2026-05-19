@@ -74,7 +74,7 @@ export class Connection {
 
     }
 
-    async sendMessage(text: string) {
+    async sendChat(text: string) {
         const api = (window as any).api;
         if (api) {
             await api.chat(text);
@@ -119,6 +119,18 @@ export class Connection {
             this.ws.send(JSON.stringify({
                 event: 'doAction',
                 data: { activeWindowId, inputs, args },
+            }));
+        }
+    }
+
+    async sendMessage(messageType: string, data: any) {
+        const api = (window as any).api;
+        if (api) {
+            await api.sendMessage(messageType, data);
+        } else {
+            this.ws.send(JSON.stringify({
+                event: messageType,
+                data,
             }));
         }
     }

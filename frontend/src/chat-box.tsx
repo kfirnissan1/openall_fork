@@ -71,8 +71,8 @@ class CounterStore {
         this.count++;
     }
 
-    sendMessage(text: string) {
-        this.connection.then(c => c.sendMessage(text));
+    sendChat(text: string) {
+        this.connection.then(c => c.sendChat(text));
     }
 
     closeWindow(id: number) {
@@ -94,6 +94,10 @@ class CounterStore {
 
     doAction(activeWindowId: number, inputs: { [key: string]: string }, ...args: any[]) {
         this.connection.then(c => c.doAction(activeWindowId, inputs, ...args));
+    }
+
+    sendMessage(messageType: string, data: any) {
+        this.connection.then(c => c.sendMessage(messageType, data));
     }
 }
 
@@ -148,7 +152,7 @@ export const ChatBox = observer(() => {
         setMessage(event.target.value);
     };
     const sendMessage = () => {
-        counterStore.sendMessage(message);
+        counterStore.sendChat(message);
         setMessage('');
     };
 

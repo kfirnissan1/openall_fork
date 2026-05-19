@@ -112,7 +112,7 @@ export class ChatService {
                 await this.handleClose(message.data);
                 break;
             default:
-                console.log('unknown message ', message.event);
+                console.log('unknown message ', message.event, message.data);
                 break;
         }
     }
