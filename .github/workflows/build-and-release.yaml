@@ -74,7 +74,7 @@ jobs:
           if [ "${{ matrix.platform }}" == "mac" ]; then
             zip -r electron-mac.zip dist/mac-arm64
           elif [ "${{ matrix.platform }}" == "mac64" ]; then
-            zip -r electron-mac64.zip dist/mac-x64
+            zip -r electron-mac64.zip dist/mac-amd64
           else
             powershell -Command "Compress-Archive -Path 'dist/win-unpacked/*' -DestinationPath 'electron-win.zip'"
           fi
