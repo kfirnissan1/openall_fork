@@ -16,7 +16,7 @@ class ConfigStore {
         this.modelsLoaded = false;
     }
 
-    loadModels() {
+    loadModels(apiKey: string) {
         this.modelsLoaded = true;
     }
 }
