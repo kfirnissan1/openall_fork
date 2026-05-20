@@ -14,7 +14,7 @@ let mainWindow = null;
 
 function createWindow() {
     const win = new BrowserWindow({
-        title: 'open/all',
+        title: 'openall',
         width: 1000,
         height: 700,
         // icon: path.join(__dirname, '../frontend/dist/favicon.svg'),

@@ -74,7 +74,7 @@ let App = observer(() => {
                 </div>
             </DraggableWindow> */}
             <div className="fixed left-4 top-4 text-4xl text-zinc-300/20 font-black pointer-events-none select-none">
-                open/all
+                openall
             </div>
             {counterStore.initialized ? <Navbar /> : <></>}
             {counterStore.showConfig ? <ConfigBox /> : <></>}

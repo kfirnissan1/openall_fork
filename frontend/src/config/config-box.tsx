@@ -34,7 +34,7 @@ export const ConfigContent = observer(() => {
         <div className="flex flex-col gap-2 text-sm text-zinc-800">
 
             <div>
-                Connect open/all to a provider of your choice. You can choose between local AI options or various cloud providers. <br />After selecting a provider,
+                Connect openall to a provider of your choice. You can choose between local AI options or various cloud providers. <br />After selecting a provider,
                 you'll be able to choose from the different models this provider hosts.
             </div>
 
