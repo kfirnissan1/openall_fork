@@ -27,7 +27,7 @@
     },
     "build": {
         "appId": "com.openall.app",
-        "productName": "open/all",
+        "productName": "openall",
         "npmRebuild": false,
         "directories": {
             "output": "dist"
@@ -36,16 +36,22 @@
             {
                 "from": "../frontend/dist",
                 "to": "frontend/dist"
+            },
+            {
+                "from": "icons/png/256x256.png",
+                "to": "icons/png/256x256.png"
             }
         ],
         "files": [
             "**/*"
         ],
         "mac": {
-            "target": "dmg"
+            "target": "dmg",
+            "icon": "icons/mac/icon.icns"
         },
         "win": {
-            "target": "portable"
+            "target": "portable",
+            "icon": "icons/win/icon.ico"
         },
         "linux": {
             "target": "AppImage"
