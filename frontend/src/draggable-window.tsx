@@ -20,8 +20,8 @@ export const activeWindowStore = new ActiveWindowStore();
 const DraggableWindow = observer(({ children, windowKey, title, data, minimized, modal, h, w, loading }:
     { children: any, windowKey: React.Key, title: string, data: any, modal: boolean, minimized: boolean, h?: number, w?: number, loading: boolean }) => {
 
-    const width = w || (modal ? 400 : 720);
-    const height = h || 400;
+    const width = Math.min(w || (modal ? 400 : 720), window.innerWidth);
+    const height = Math.min(h || 400, window.innerHeight);
 
     // export default function DraggableWindow({ x, y, children }: { x: number, y: number, children: any }) {
     const [position, setPosition] = useState({ x: window.innerWidth / 2 - width / 2, y: window.innerHeight / 2 - height / 2, });

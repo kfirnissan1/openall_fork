@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+import * as electronUpdater from 'electron-updater';
 
 import { bootstrap } from '@openall-ai/core/dist/in-proc.js';
 import { ChatGateway } from '@openall-ai/core/dist/chat/chat.gateway.js';
@@ -28,7 +29,7 @@ function createWindow() {
 }
 
 let client = {
-    send: (s) => { console.log(s); mainWindow.webContents.send('ws:event', s); },
+    send: (s) => { mainWindow.webContents.send('ws:event', s); },
 };
 
 async function init() {
@@ -60,7 +61,10 @@ async function init() {
         return await chatGateway.handleMessage(msgType, data, client);
     });
 
-    app.whenReady().then(createWindow);
+    app.whenReady().then(() => {
+        createWindow();
+        // electronUpdater.default.autoUpdater.checkForUpdatesAndNotify();
+    });
 }
 
 init();

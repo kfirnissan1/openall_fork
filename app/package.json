@@ -16,7 +16,8 @@
         "build:mac64": "electron-builder --mac --x64"
     },
     "dependencies": {
-        "@openall-ai/core": "^0.2.0"
+        "@openall-ai/core": "^0.2.0",
+        "electron-updater": "^6.8.3"
     },
     "devDependencies": {
         "concurrently": "^9.2.1",
@@ -26,12 +27,18 @@
         "wait-on": "^9.0.5"
     },
     "build": {
-        "appId": "com.openall.app",
+        "appId": "com.openall-ai.app",
         "productName": "openall",
         "npmRebuild": false,
         "directories": {
             "output": "dist"
         },
+        "publish": [
+            {
+                "provider": "generic",
+                "url": "https://updates.openall-ai.com/openall-app"
+            }
+        ],
         "extraResources": [
             {
                 "from": "../frontend/dist",

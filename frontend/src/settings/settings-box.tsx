@@ -17,6 +17,11 @@ export const SettingsContent = observer(() => {
 
     return <>
         <div className="flex-1">
+            <button 
+                className="mb-2 px-6 py-2 rounded-xl bg-gray-800/80 hover:bg-gray-800 text-white font-medium shadow-md transition">
+                Configure LLM Provider
+            </button>
+
             <div className="font-bold">Chat Prompt</div>
             <div className="rounded-xl bg-white/80 border-gray-400 border p-2 my-2" contentEditable="true">{chatPrompt}</div>
             <div className="mt-4 font-bold">UI Action Prompt</div>
@@ -44,7 +49,7 @@ export const SettingsBox = observer(() => {
 
     return (<>
         <div>
-            <DraggableWindow loading={false} data={m} modal={true} minimized={m.minimized} windowKey={'win' + m.id} key={'win' + m.id} title={m.title} h={710} w={800}>
+            <DraggableWindow loading={false} data={m} modal={true} minimized={m.minimized} windowKey={'win' + m.id} key={'win' + m.id} title={m.title} h={610} w={800}>
                 <SettingsContent />
             </DraggableWindow>
         </div>
