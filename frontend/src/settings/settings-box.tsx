@@ -2,7 +2,6 @@ import { observer } from "mobx-react-lite";
 import DraggableWindow from "../draggable-window";
 import { counterStore } from "../chat-box";
 
-
 export const SettingsContent = observer(() => {
 
     const chatPrompt = counterStore.prompts.chatPrompt;
@@ -17,10 +16,10 @@ export const SettingsContent = observer(() => {
 
     return <>
         <div className="flex-1">
-            <button 
+            {/* <button onClick={() => counterStore.showConfigWindow()}
                 className="mb-2 px-6 py-2 rounded-xl bg-gray-800/80 hover:bg-gray-800 text-white font-medium shadow-md transition">
                 Configure LLM Provider
-            </button>
+            </button> */}
 
             <div className="font-bold">Chat Prompt</div>
             <div className="rounded-xl bg-white/80 border-gray-400 border p-2 my-2" contentEditable="true">{chatPrompt}</div>

@@ -75,6 +75,10 @@ class CounterStore {
         this.count++;
     }
 
+    showConfigWindow() {
+        this.showConfig = true;
+    }
+
     sendChat(text: string) {
         this.connection.then(c => c.sendChat(text));
     }
