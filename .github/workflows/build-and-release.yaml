@@ -71,10 +71,10 @@ jobs:
         run: |
           if [ "${{ matrix.platform }}" == "mac" ]; then
             cd app/ dist/mac-arm64 && 
-            zip -r electron-mac.app.zip openall.app
+            zip -r openall-mac.app.zip openall.app/
           elif [ "${{ matrix.platform }}" == "mac64" ]; then
             cd app/dist/mac && 
-            zip -r electron-mac64.app.zip openall.app
+            zip -r openall-mac64.app.zip openall.app/
           fi
 
       - name: Upload build artifacts
