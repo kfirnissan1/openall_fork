@@ -251,6 +251,28 @@
       color: var(--accent); text-transform: uppercase; margin-top: 2rem;
     }
 
+    .btn-discord {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 1rem;
+      padding: 0.65rem 1.5rem;
+      background: transparent;
+      border: 0.5px solid rgba(88,101,242,0.4);
+      color: rgba(88,101,242,0.85);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+      font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 1.9s forwards;
+    }
+    .btn-discord:hover {
+      background: rgba(88,101,242,0.1);
+      border-color: rgba(88,101,242,0.7);
+      color: rgb(114,137,218);
+      transform: translateY(-1px);
+    }
+ 
+
     /* SECTIONS */
     section {
       padding: 8rem 4rem;
@@ -396,9 +418,11 @@
       gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
     }
     .cta-github-link {
-      font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-      color: var(--text-mid); letter-spacing: 0.1em;
-    }
+  display: flex;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--text-mid); letter-spacing: 0.1em;
+}
     .cta-github-link a {
       color: var(--text-mid); text-decoration: none;
       border-bottom: 1px solid var(--border-mid); padding-bottom: 1px;
@@ -737,7 +761,12 @@
       Read the manifesto
       <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 6h10M7 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
-  </div>
+    </div>
+     <a class="btn-discord" href="https://discord.gg/A3ZpE6Fv9" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.032.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+    Join the conversation on Discord
+  </a>
+  
 </section>
 
 <!-- THE SHIFT -->
@@ -795,11 +824,11 @@
     <p class="section-label reveal">Artificial Super Assistance</p>
 
     <div class="asa-header reveal">
-      <h2>Not a chatbot. Not an app.<br>An assistant that builds your tools.</h2>
+      <h2>Not a chatbot. Not an app.<br>A super assistant that is there for you.</h2>
       <p>
         openall turns your device into an ASA — an Artificial Super Assistant 
         that knows your context, remembers everything, controls your environment, 
-        and builds exactly what you need, the moment you need it. No downloads. No
+        and delivers exactly what you need, the moment you need it. No downloads. No
         configuration. Just intent, and a persistent tool that lives on your machine.
       </p>
     </div>
@@ -811,10 +840,10 @@
         <p class="asa-card-label">Personal Productivity</p>
         <div class="asa-prompt">
           <span class="asa-prompt-glyph">&#9672;</span>
-          <p>"Build me a daily command center — my meetings, my files, my emails, my calendar. Let me book a restaurant or move a file from the same place."</p>
+          <p>"I need a daily command center — my meetings, my files, my emails, my calendar. Let me book a restaurant or move a file from the same place."</p>
         </div>
         <div class="asa-result">
-          <p class="asa-result-label">What ASA builds</p>
+          <p class="asa-result-label">What ASA delivers</p>
           <p>A persistent, windowed tool that surfaces everything relevant to your day. It knows your schedule, your open threads, your preferences. It acts — books, drafts, moves, reminds — without switching apps or losing context.</p>
         </div>
       </div>
@@ -827,7 +856,7 @@
           <p>"Give me a tool to run my weekly review — pull the data, update the deck, flag what changed, and send the summary to the team."</p>
         </div>
         <div class="asa-result">
-          <p class="asa-result-label">What ASA builds</p>
+          <p class="asa-result-label">What ASA delivers</p>
           <p>A workflow instrument that runs on your schedule. It reads your data sources, rewrites the relevant slides, surfaces anomalies, and drafts the message — all in one session, with full memory of last week's run.</p>
         </div>
       </div>
@@ -840,7 +869,7 @@
           <p>"I'm closing a deal. I need a room for it."</p>
         </div>
         <div class="asa-result">
-          <p class="asa-result-label">What ASA builds</p>
+          <p class="asa-result-label">What ASA delivers</p>
           <p>A bespoke deal room that has never existed before and will never exist again. A windowed interface built around this relationship, this timeline, this person's way of thinking. Not a dashboard pulled from a template. Not a notification pipeline. A living instrument: the emails on one side, the open questions on the other, the silence tracker in the corner that knows this stakeholder always goes quiet before they say no. It remembers last Tuesday. It updates as the deal moves. When it's done, you close it. It was always only ever yours.</p>
         </div>
       </div>
@@ -878,7 +907,7 @@
       </div>
       <div class="step reveal" style="transition-delay:0.19s">
         <p class="step-num">03 &nbsp;/&nbsp; Describe</p>
-        <h3>Say what you want to build</h3>
+        <h3>Say what you need, want, or imagine</h3>
         <p>
           No syntax. No boilerplate. No scaffolding. Describe your intent in plain language.
           A tool. A workflow. A data transformation. A product. Anything.
@@ -906,36 +935,24 @@
 
     <div class="screens reveal">
       <div class="screen-frame">
-        <p class="screen-label">01 — The user describes what they want</p>
+        <p class="screen-label">01 — The platform is installed and ready for use</p>
         <div class="screen-img-wrap">
           <!-- Replace src with your actual screenshot path or URL -->
-          <img src="" alt="openall input: user typing a plain language prompt" class="screen-img screen-placeholder"/>
-          <div class="screen-placeholder-inner">
-            <span class="placeholder-glyph">&#9672;</span>
-            <span class="placeholder-text">Screenshot: user prompt</span>
-          </div>
+          <img src="images/1.png" alt="openall input: user typing a plain language prompt" class="screen-img screen-placeholder"/>
         </div>
       </div>
 
       <div class="screen-frame">
-        <p class="screen-label">02 — openall runs it. No code written.</p>
+        <p class="screen-label">02 — The users asks in plain language.</p>
         <div class="screen-img-wrap">
-          <img src="" alt="openall output: generated result running live" class="screen-img screen-placeholder"/>
-          <div class="screen-placeholder-inner">
-            <span class="placeholder-glyph">&#9672;</span>
-            <span class="placeholder-text">Screenshot: live result</span>
-          </div>
+          <img src="images/2.png" alt="openall output: generated result running live" class="screen-img screen-placeholder"/>
         </div>
       </div>
 
       <div class="screen-frame screen-frame--wide">
-        <p class="screen-label">03 — The user asks for a change. It updates in real time.</p>
+        <p class="screen-label">03 — openall runs it. No code written at any point.</p>
         <div class="screen-img-wrap">
-          <img src="" alt="openall iteration: updated result after a follow-up prompt" class="screen-img screen-placeholder"/>
-          <div class="screen-placeholder-inner">
-            <span class="placeholder-glyph">&#9672;</span>
-            <span class="placeholder-text">Screenshot: iteration</span>
-          </div>
+          <img src="images/3.png" alt="openall iteration: updated result after a follow-up prompt" class="screen-img screen-placeholder"/>
         </div>
       </div>
     </div>
@@ -1003,11 +1020,18 @@
       &#8595;&nbsp; Install for Windows
     </a>
   </div>
-  <p class="cta-github-link reveal">
-    <a href="https://github.com/openall-ai/openall" target="_blank" rel="noopener">
-      &#9733; &nbsp;Star on GitHub
+  <div class="cta-github-link reveal">
+    <a class="btn-primary" href="https://github.com/openall-ai/openall" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Star on GitHub
     </a>
-  </p>
+  </div>
+  <p> 
+    <a class="btn-discord" href="https://discord.gg/A3ZpE6Fv9" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.032.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+    Join the conversation on Discord
+  </a>
+</p>
 </section>
 
 <!-- FOOTER -->
