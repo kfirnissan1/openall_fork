@@ -81,6 +81,10 @@ class CounterStore {
         this.showConfig = true;
     }
 
+    hideConfig() {
+        this.showConfig = false;
+    }
+
     sendChat(text: string) {
         this.connection.then(c => c.sendChat(text));
     }
@@ -93,7 +97,7 @@ class CounterStore {
         this.windows.find(w => w.id === id).minimized = false;
     }
 
-    saveConfig(config: { provider: string; apiKey: string; }) {
+    saveConfig(config: { provider: string; apiKey: string; model: string }) {
         this.connection.then(c => c.saveConfig(config));
         this.showConfig = false;
     }

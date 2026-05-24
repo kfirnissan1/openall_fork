@@ -11,6 +11,13 @@ export type Client = {
     send: (s: string) => void;
 }
 
+const PROVIDER_CONFIGS: Record<string, { endpoint: string; apiKeyHeader: string; defaultModel: string }> = {
+    openrouter: { endpoint: 'https://openrouter.ai/api/v1/chat/completions',                              apiKeyHeader: 'Authorization', defaultModel: 'openai/gpt-4.1' },
+    openai:     { endpoint: 'https://api.openai.com/v1/chat/completions',                                 apiKeyHeader: 'Authorization', defaultModel: 'gpt-4.1' },
+    anthropic:  { endpoint: 'https://api.anthropic.com/v1/messages',                                      apiKeyHeader: 'x-api-key',     defaultModel: 'claude-opus-4-6' },
+    google:     { endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   apiKeyHeader: 'Authorization', defaultModel: 'gemini-2.5-flash' },
+};
+
 const openHtmlViewTool = {
     type: "function",
     function: {
@@ -67,6 +74,8 @@ export class ChatService {
 
     private clients: Client[] = [];
     private conversationId = 'jmcuc';
+    private currentProvider = 'openrouter';
+    private currentModel = 'openai/gpt-5.4-nano'; // legacy fallback
 
     private prompts = {
         chatPrompt: `You are role-playing as an operating system. The user will ask you to do stuff as a computer.
@@ -74,7 +83,7 @@ export class ChatService {
         editable with the content he already provided. Use the content tool to show HTML do not output it directly. The html you display with the
         content tool can be interactive to allow the user shortcuts to perform actions on entities listed etc. Don't ask questions unless you really
         need to. Go with the flow, especially creating UIs using the tool and if needed the user will correct it to what they want. Only show data from
-        the database. If you show sample data, be sure to add it to the db first (including creating tables if needed). If you don't store the sample 
+        the database. If you show sample data, be sure to add it to the db first (including creating tables if needed). If you don't store the sample
         data in the DB it won't persist and the experience will be confusing.`,
         uiActionPrompt: `The user has performed an action using doAction() with the following args. You'll need to decide what to do. Most likely you'll update the
             currently active window but not necessarily. The active window has ID %ACTIVEWINDOWID% and its current HTML content is %WINDOWCONTENT%. The user performed an action with
@@ -93,6 +102,8 @@ export class ChatService {
         if (!existingConfig) {
             client.send(JSON.stringify({ event: 'showConfig', data: {} }));
         } else {
+            this.currentProvider = existingConfig.provider;
+            this.currentModel = existingConfig.model || PROVIDER_CONFIGS[existingConfig.provider]?.defaultModel || 'openai/gpt-5.4-nano';
             this.initializeState(client);
         }
 
@@ -150,12 +161,16 @@ export class ChatService {
         if (data.apiKey) {
             await keytar.setPassword('openall', data.provider, data.apiKey);
         }
+        this.currentProvider = data.provider;
+        this.currentModel = data.model || PROVIDER_CONFIGS[data.provider]?.defaultModel;
+
         const existingConfig = await this.chatConfigRepo.findOne({ where: { id: 0, }, });
         if (existingConfig) {
             existingConfig.provider = data.provider;
+            existingConfig.model = data.model;
             await this.chatConfigRepo.save(existingConfig);
         } else {
-            const newConfig = this.chatConfigRepo.create({ id: 0, provider: data.provider, });
+            const newConfig = this.chatConfigRepo.create({ id: 0, provider: data.provider, model: data.model, });
             await this.chatConfigRepo.save(newConfig);
         }
         if (!this.clients.includes(client)) {
@@ -243,22 +258,27 @@ export class ChatService {
 
         let messages = history.map(h => ({ role: h.user ? 'user' : 'assistant', content: h.content, }));
 
-        for (let i = 0; i < 10; ++i) {
-            const response = await this.runAi(messages);
+        try {
+            for (let i = 0; i < 10; ++i) {
+                const response = await this.runAi(messages);
 
-            if (response && response.tools) {
-                for (let toolResponse of response.tools) {
-                    await this.handleToolCall(toolResponse, messages, this.clients);
+                if (response && response.tools) {
+                    for (let toolResponse of response.tools) {
+                        await this.handleToolCall(toolResponse, messages, this.clients);
+                    }
+                } else {
+                    const responseItem = { content: response!.content, from: 'James' };
+                    history.push(this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, }));
+                    const agentMessage = this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, conversationId: this.conversationId, });
+                    await this.chatHistoryRepo.save(agentMessage);
+                    this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: responseItem })));
+
+                    break;
                 }
-            } else {
-                const responseItem = { content: response!.content, from: 'James' };
-                history.push(this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, }));
-                const agentMessage = this.chatHistoryRepo.create({ content: responseItem.content, user: undefined, conversationId: this.conversationId, });
-                await this.chatHistoryRepo.save(agentMessage);
-                this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: responseItem })));
-
-                break;
             }
+        } catch (e: any) {
+            console.error('handleChat error:', e);
+            this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: { content: `⚠️ Error: ${e.message}`, from: 'System' } })));
         }
     }
 
@@ -277,28 +297,35 @@ export class ChatService {
     }
 
     async loadApiKey() {
-        return process.env.OPENROUTER_API_KEY || await keytar.getPassword('openall', 'openrouter');
+        return process.env.OPENROUTER_API_KEY || await keytar.getPassword('openall', this.currentProvider) || '';
     }
 
-    async runAi(messages: { content: string, role: string, }[]) {
+    async runAi(messages: any[]) {
+        if (this.currentProvider === 'anthropic') {
+            return this.runAiAnthropic(messages);
+        }
+
+        const config = PROVIDER_CONFIGS[this.currentProvider] || PROVIDER_CONFIGS['openrouter'];
+        const model = this.currentModel || config.defaultModel;
+        const apiKey = await this.loadApiKey();
         const activeWindows = await this.getWindowsSummary();
 
-        // console.log(messages, messages.length);
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const authValue = `Bearer ${apiKey}`;
+
+        const response = await fetch(config.endpoint, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ` + await this.loadApiKey(),
+                [config.apiKeyHeader]: authValue,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "openai/gpt-5.4-nano",
+                model,
                 messages: [
                     { role: "system", content: this.prompts.chatPrompt, },
                     {
                         role: "system", content: 'currently open windows: ' + JSON.stringify(activeWindows.map(w => ({ id: w.id, title: w.title, })))
                     },
                     ...messages,
-                    // { role: "user", content: prompt }
                 ],
                 tools: [
                     openHtmlViewTool,
@@ -342,6 +369,152 @@ export class ChatService {
 
             return { tools: toolResults };
         }
+    }
+
+    private async runAiAnthropic(messages: any[]) {
+        const activeWindows = await this.getWindowsSummary();
+        const apiKey = await this.loadApiKey();
+
+        const systemContent = [
+            this.prompts.chatPrompt,
+            'currently open windows: ' + JSON.stringify(activeWindows.map(w => ({ id: w.id, title: w.title, }))),
+        ].join('\n\n');
+
+        const anthropicMessages = this.convertToAnthropicMessages(messages);
+
+        const requestBody = {
+            model: this.currentModel,
+            max_tokens: 8096,
+            system: systemContent,
+            messages: anthropicMessages,
+            tools: this.convertToolsForAnthropic([openHtmlViewTool, queryDatabase]),
+            tool_choice: { type: 'auto' },
+        };
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            let detail = text;
+            try { detail = JSON.parse(text)?.error?.message ?? text; } catch {}
+            throw new Error(`Anthropic ${response.status}: ${detail}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        const contentBlocks: any[] = data.content || [];
+        const textBlock = contentBlocks.find((b: any) => b.type === 'text');
+        const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
+
+        if (data.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
+            messages.push({ role: 'assistant', content: textBlock?.text || '' });
+            return { content: textBlock?.text || '' };
+        }
+
+        // Push to messages in OpenAI-like format so handleToolCall works unchanged
+        const tool_calls = toolUseBlocks.map((b: any) => ({
+            id: b.id,
+            type: 'function',
+            function: { name: b.name, arguments: JSON.stringify(b.input) },
+        }));
+        messages.push({ role: 'assistant', content: textBlock?.text || null, tool_calls });
+
+        const toolResults: any[] = [];
+        for (const b of toolUseBlocks) {
+            if (b.name === openHtmlViewTool.function.name) {
+                toolResults.push({ attachment: `\`${b.input.content}\``, title: b.input.title, windowId: b.input.windowId, callId: b.id });
+            }
+            if (b.name === queryDatabase.function.name) {
+                toolResults.push({ query: b.input.query, callId: b.id });
+            }
+        }
+
+        return { tools: toolResults };
+    }
+
+    private convertToAnthropicMessages(messages: any[]): any[] {
+        const result: any[] = [];
+
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+
+            // Skip system messages — handled via top-level system field
+            if (msg.role === 'system') continue;
+
+            // Group consecutive tool messages into a single user message with tool_result blocks
+            if (msg.role === 'tool') {
+                const toolResults: any[] = [];
+                while (i < messages.length && messages[i].role === 'tool') {
+                    toolResults.push({
+                        type: 'tool_result',
+                        tool_use_id: messages[i].tool_call_id,
+                        content: messages[i].content || '(no output)',
+                    });
+                    i++;
+                }
+                i--; // compensate for the outer loop increment
+                result.push({ role: 'user', content: toolResults });
+                continue;
+            }
+
+            // Assistant message that made tool calls — convert to Anthropic tool_use blocks
+            if (msg.role === 'assistant' && msg.tool_calls) {
+                const content: any[] = [];
+                if (msg.content) content.push({ type: 'text', text: msg.content });
+                for (const tc of msg.tool_calls) {
+                    content.push({
+                        type: 'tool_use',
+                        id: tc.id,
+                        name: tc.function.name,
+                        input: typeof tc.function.arguments === 'string'
+                            ? JSON.parse(tc.function.arguments)
+                            : tc.function.arguments,
+                    });
+                }
+                result.push({ role: 'assistant', content });
+                continue;
+            }
+
+            // Skip messages with empty content — Anthropic rejects them
+            if (!msg.content) continue;
+
+            // Regular user or assistant text message
+            result.push({ role: msg.role, content: msg.content });
+        }
+
+        // Anthropic requires first message to be user — drop any leading assistant messages
+        while (result.length > 0 && result[0].role === 'assistant') {
+            result.shift();
+        }
+
+        // Merge consecutive same-role text messages (can happen after drops above)
+        const merged: any[] = [];
+        for (const msg of result) {
+            const prev = merged[merged.length - 1];
+            if (prev && prev.role === msg.role && typeof prev.content === 'string' && typeof msg.content === 'string') {
+                prev.content += '\n\n' + msg.content;
+            } else {
+                merged.push({ ...msg });
+            }
+        }
+
+        return merged;
+    }
+
+    private convertToolsForAnthropic(tools: any[]): any[] {
+        return tools.map(tool => ({
+            name: tool.function.name,
+            description: tool.function.description,
+            input_schema: tool.function.parameters,
+        }));
     }
 
 

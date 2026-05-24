@@ -140,7 +140,7 @@ const DraggableWindow = observer(({ children, windowKey, title, data, minimized,
             <div className="fixed group" onPointerDown={windowPointerDown} style={{
                 width: size.width,
                 height: size.height,
-                zIndex: isWindowCurrentlyActive ? 10 : 0,
+                zIndex: modal ? 50 : (isWindowCurrentlyActive ? 10 : 0),
                 transform: `translate(${position.x}px, ${position.y}px)`,
             }}>
                 {attention && (
