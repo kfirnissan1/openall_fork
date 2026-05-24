@@ -4,8 +4,8 @@ set -e
 
 APP_NAME="openall.app"
 
-ARM_URL="https://github.com/openall-ai/openall/releases/download/v0.1.0/electron-mac.app.zip"
-INTEL_URL="https://github.com/openall-ai/openall/releases/download/v0.1.0/electron-mac64.app.zip"
+ARM_URL="https://github.com/openall-ai/openall/releases/download/v0.1.0/openall-mac.app.zip"
+INTEL_URL="https://github.com/openall-ai/openall/releases/download/v0.1.0/openall-mac64.app.zip"
 
 TMP_DIR=$(mktemp -d)
 ZIP_FILE="$TMP_DIR/openall-app.zip"
