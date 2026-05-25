@@ -48,15 +48,3 @@ jobs:
       - name: Install app dependencies
         run: |
           cd app && npm ci
-
-      - name: Build app
-        shell: bash
-        run: |
-          cd app && 
-          if [ "${{ matrix.platform }}" == "mac" ]; then
-            npm run build:mac
-          elif [ "${{ matrix.platform }}" == "mac64" ]; then
-            npm run build:mac64
-          else
-            npm run build:win
-          fi
