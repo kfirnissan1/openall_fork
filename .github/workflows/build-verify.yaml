@@ -1,0 +1,50 @@
+name: Build and Verify
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install workspace dependencies
+        run: |
+          npm ci
+
+      # === FRONTEND ===
+      - name: Install frontend dependencies
+        run: |
+          cd frontend && npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm run build
+
+      # === CORE ===
+      - name: Install core dependencies
+        run: |
+          cd core && npm ci
+
+      - name: Build core
+        run: |
+          cd core && npm run build
+
+      # === APP ===
+      - name: Install app dependencies
+        run: |
+          cd app && npm ci
