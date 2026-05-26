@@ -13,7 +13,7 @@ const PLATFORMS = [
         action: (caption: string) => {
             const text = encodeURIComponent(caption);
             const url = encodeURIComponent("https://useopenall.com");
-            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
+            openUrl(`https://twitter.com/intent/tweet?text=${text}&url=${url}`);
         },
     },
     {
@@ -25,7 +25,7 @@ const PLATFORMS = [
         ),
         action: (caption: string) => {
             const text = encodeURIComponent(`${caption}\nhttps://useopenall.com`);
-            window.open(`https://bsky.app/intent/compose?text=${text}`, "_blank");
+            openUrl(`https://bsky.app/intent/compose?text=${text}`);
         },
     },
     {
@@ -37,7 +37,7 @@ const PLATFORMS = [
         ),
         action: (caption: string) => {
             const text = encodeURIComponent(`${caption}\nhttps://useopenall.com`);
-            window.open(`https://threads.net/intent/post?text=${text}`, "_blank");
+            openUrl(`https://threads.net/intent/post?text=${text}`);
         },
     },
     {
@@ -49,7 +49,7 @@ const PLATFORMS = [
         ),
         action: (caption: string) => {
             const text = encodeURIComponent(`${caption}\nhttps://useopenall.com`);
-            window.open(`https://wa.me/?text=${text}`, "_blank");
+            openUrl(`https://wa.me/?text=${text}`);
         },
     },
     {
@@ -62,7 +62,7 @@ const PLATFORMS = [
         action: (caption: string) => {
             const url = encodeURIComponent("https://useopenall.com");
             const text = encodeURIComponent(caption);
-            window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
+            openUrl(`https://t.me/share/url?url=${url}&text=${text}`);
         },
     },
     {
@@ -75,7 +75,7 @@ const PLATFORMS = [
         action: (caption: string) => {
             const url = encodeURIComponent("https://useopenall.com");
             const title = encodeURIComponent(caption);
-            window.open(`https://reddit.com/submit?url=${url}&title=${title}`, "_blank");
+            openUrl(`https://reddit.com/submit?url=${url}&title=${title}`);
         },
     },
     {
@@ -90,7 +90,7 @@ const PLATFORMS = [
             link.href = imageDataUrl;
             link.download = "openall-share.png";
             link.click();
-            window.open(`https://www.linkedin.com/feed/`, "_blank");
+            openUrl(`https://www.linkedin.com/feed/`);
         },
         isDownload: true,
     },
@@ -102,7 +102,7 @@ const PLATFORMS = [
             </svg>
         ),
         action: (_caption: string) => {
-            window.open(`https://facebook.com/sharer/sharer.php?u=useopenall.com`, "_blank");
+            openUrl(`https://facebook.com/sharer/sharer.php?u=useopenall.com`);
         },
     },
     {
@@ -115,7 +115,7 @@ const PLATFORMS = [
         action: (caption: string) => {
             const url = encodeURIComponent("https://useopenall.com");
             const desc = encodeURIComponent(caption);
-            window.open(`https://pinterest.com/pin/create/button/?url=${url}&description=${desc}`, "_blank");
+            openUrl(`https://pinterest.com/pin/create/button/?url=${url}&description=${desc}`);
         },
     },
     {
@@ -136,6 +136,15 @@ const PLATFORMS = [
     },
 ] as const;
 
+function openUrl(url: string) {
+    const api = (window as any).api;
+    if (api?.openExternal) {
+        api.openExternal(url);
+    } else {
+        window.open(url, "_blank");
+    }
+}
+
 function dataUrlToBlob(dataUrl: string): Blob {
     const [header, base64] = dataUrl.split(",");
     const mime = header.match(/:(.*?);/)![1];
@@ -146,6 +155,11 @@ function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 async function copyImageToClipboard(imageDataUrl: string): Promise<void> {
+    const api = (window as any).api;
+    if (api?.clipboardWriteImage) {
+        await api.clipboardWriteImage(imageDataUrl);
+        return;
+    }
     const blob = dataUrlToBlob(imageDataUrl);
     await navigator.clipboard.write([
         new ClipboardItem({ "image/png": blob }),

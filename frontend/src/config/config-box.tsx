@@ -4,10 +4,10 @@ import { counterStore } from "../chat-box";
 import { makeAutoObservable } from "mobx";
 
 const PROVIDERS = [
-    { id: 'openrouter', label: 'OpenRouter',    placeholder: 'sk-or-...',  models: ['openai/gpt-4.1', 'openai/gpt-4.1-mini', 'openai/gpt-4.1-nano', 'anthropic/claude-opus-4', 'anthropic/claude-sonnet-4-5', 'anthropic/claude-haiku-4-5', 'google/gemini-2.5-pro', 'google/gemini-2.5-flash', 'meta-llama/llama-4-maverick', 'meta-llama/llama-4-scout'] },
-    { id: 'openai',     label: 'OpenAI',        placeholder: 'sk-...',     models: ['gpt-4.1', 'gpt-4o', 'gpt-4o-mini', 'o3-mini'] },
-    { id: 'anthropic',  label: 'Anthropic',     placeholder: 'sk-ant-...', models: ['claude-opus-4-6', 'claude-sonnet-4-5', 'claude-haiku-4-5'] },
-    { id: 'google',     label: 'Google Gemini', placeholder: 'AIza...',    models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'] },
+    { id: 'openrouter', label: 'OpenRouter',    placeholder: 'sk-or-...',  models: ['openai/gpt-5.5', 'openai/gpt-5.4', 'openai/gpt-5.4-mini', 'anthropic/claude-opus-4-7', 'anthropic/claude-sonnet-4-6', 'google/gemini-3.5-flash', 'google/gemini-3.1-pro-preview', 'meta-llama/llama-4-maverick', 'openai/gpt-5.4-nano', 'anthropic/claude-haiku-4-5'] },
+    { id: 'openai',     label: 'OpenAI',        placeholder: 'sk-...',     models: ['gpt-5.5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano', 'gpt-4.1'] },
+    { id: 'anthropic',  label: 'Anthropic',     placeholder: 'sk-ant-...', models: ['claude-opus-4-7', 'claude-sonnet-4-6', 'claude-haiku-4-5', 'claude-opus-4-6', 'claude-sonnet-4-5'] },
+    { id: 'google',     label: 'Google Gemini', placeholder: 'AIza...',    models: ['gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-3.1-flash-lite', 'gemini-2.5-pro', 'gemini-2.5-flash'] },
 ];
 
 class ConfigStore {

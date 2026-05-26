@@ -12,10 +12,10 @@ export type Client = {
 }
 
 const PROVIDER_CONFIGS: Record<string, { endpoint: string; apiKeyHeader: string; defaultModel: string }> = {
-    openrouter: { endpoint: 'https://openrouter.ai/api/v1/chat/completions',                              apiKeyHeader: 'Authorization', defaultModel: 'openai/gpt-4.1' },
-    openai:     { endpoint: 'https://api.openai.com/v1/chat/completions',                                 apiKeyHeader: 'Authorization', defaultModel: 'gpt-4.1' },
-    anthropic:  { endpoint: 'https://api.anthropic.com/v1/messages',                                      apiKeyHeader: 'x-api-key',     defaultModel: 'claude-opus-4-6' },
-    google:     { endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   apiKeyHeader: 'Authorization', defaultModel: 'gemini-2.5-flash' },
+    openrouter: { endpoint: 'https://openrouter.ai/api/v1/chat/completions',                              apiKeyHeader: 'Authorization', defaultModel: 'openai/gpt-5.4-mini' },
+    openai:     { endpoint: 'https://api.openai.com/v1/chat/completions',                                 apiKeyHeader: 'Authorization', defaultModel: 'gpt-5.4-mini' },
+    anthropic:  { endpoint: 'https://api.anthropic.com/v1/messages',                                      apiKeyHeader: 'x-api-key',     defaultModel: 'claude-opus-4-7' },
+    google:     { endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   apiKeyHeader: 'Authorization', defaultModel: 'gemini-3.5-flash' },
 };
 
 const openHtmlViewTool = {

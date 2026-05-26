@@ -123,7 +123,7 @@ const DraggableWindow = observer(({ children, windowKey, title, data, minimized,
         }
         if (!windowFrameRef.current) return;
         try {
-            const canvas = await (window as any).html2canvas(windowFrameRef.current, { useCORS: true, backgroundColor: '#ffffff' });
+            const canvas = await (window as any).html2canvas(windowFrameRef.current, { allowTaint: true, useCORS: false, backgroundColor: '#ffffff', logging: false });
             counterStore.setShareState({ active: true, imageDataUrl: canvas.toDataURL('image/png'), windowTitle: title });
         } catch (err) {
             console.error('html2canvas failed:', err);
