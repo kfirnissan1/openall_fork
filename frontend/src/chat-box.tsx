@@ -62,6 +62,13 @@ export const ChatBox = observer(() => {
         setMessage('');
     };
 
+    const handleChatBoxInput = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.code === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            sendMessage();
+        }
+    };
+
     const handleFocus = () => {
         activeWindowStore.setActiveWindow(null);
     }
@@ -81,7 +88,7 @@ export const ChatBox = observer(() => {
             <div className="flex items-center gap-3 rounded-2xl group-focus-within:bg-white/70 bg-white/30 backdrop-blur-xl border border-white/40 shadow-xl"
                 style={{ backgroundColor: connected ? undefined : connecting ? 'rgba(128,128,255,0.2)' : 'rgba(255,64,64,0.2)' }}>
                 {/* Text input */}
-                <textarea value={message} onFocus={handleFocus} onChange={handleMessageChange}
+                <textarea value={message} onFocus={handleFocus} onChange={handleMessageChange} onKeyDown={handleChatBoxInput}
                     rows={1}
                     placeholder={connected ? "Let's change the world..." : connecting ? 'Connecting...' : 'Disconnected'}
                     className="flex-1 resize-none bg-transparent outline-none p-4 text-zinc-100 group-focus-within:text-zinc-900 placeholder:text-zinc-100/50 group-focus-within:placeholder:text-zinc-500 leading-relaxed max-h-32"
