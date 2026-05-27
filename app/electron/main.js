@@ -70,6 +70,26 @@ async function init() {
         clipboard.writeImage(img);
     });
 
+    ipcMain.handle('file:pick', async (_event) => {
+        const { dialog } = await import('electron');
+        const { readFileSync } = await import('fs');
+        const result = await dialog.showOpenDialog({ properties: ['openFile'] });
+        if (result.canceled || !result.filePaths.length) return null;
+        const filePath = result.filePaths[0];
+        const name = filePath.split(/[\\/]/).pop();
+        const buffer = readFileSync(filePath);
+        if (buffer.length > 500_000) return { error: 'File exceeds 500 KB limit.' };
+        let content, isText;
+        try {
+            const text = buffer.toString('utf-8');
+            if (text.includes('\0')) throw new Error('binary');
+            content = text; isText = true;
+        } catch {
+            content = buffer.toString('base64'); isText = false;
+        }
+        return { name, content, isText };
+    });
+
     app.whenReady().then(() => {
         createWindow();
         // electronUpdater.default.autoUpdater.checkForUpdatesAndNotify();

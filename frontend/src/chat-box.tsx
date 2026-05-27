@@ -32,6 +32,42 @@ const MessageList = observer(() => {
     windowStateStore.doAction(activeWindowStore.activeWindow || 0, win.inputs, ...args);
 }
 
+(window as any).requestFileUpload = async () => {
+    const api = (window as any).api;
+    let result: { name: string; content: string; isText: boolean } | null = null;
+
+    if (api?.pickFile) {
+        result = await api.pickFile();  // Electron
+    } else {
+        // Web fallback
+        result = await new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = () => {
+                const file = input.files?.[0];
+                if (!file) { resolve(null); return; }
+                if (file.size > 500_000) { alert('File exceeds 500 KB limit.'); resolve(null); return; }
+                const isText = /\.(txt|csv|json|ts|js|py|md|html|css|xml|yaml|yml)$/i.test(file.name) || file.type.startsWith('text/');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    let content = e.target?.result as string;
+                    if (!isText) content = content.split(',')[1];
+                    resolve({ name: file.name, content, isText });
+                };
+                isText ? reader.readAsText(file) : reader.readAsDataURL(file);
+            };
+            input.click();
+        });
+    }
+
+    if (!result || (result as any).error) return;
+    const { name, content, isText } = result;
+    const block = isText
+        ? `[File: ${name}]\n\`\`\`\n${content}\n\`\`\``
+        : `[File: ${name} (base64)]\n${content}`;
+    windowStateStore.sendChat(block);
+};
+
 const WindowList = observer(() => {
     const onChange = (_: any, e: any) => console.log('change', e);
     const onInput = (m: any, e: any) => {
