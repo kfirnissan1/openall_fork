@@ -6,60 +6,18 @@ import { ChatConfigEntity } from "./entities/chat-config.entity";
 import { Repository } from "typeorm";
 import { DatabaseService } from "../state/database.service";
 import * as keytar from 'keytar';
+import { openHtmlViewTool, queryDatabase } from "./tools";
+import { AnthropicService } from "./anthropic.service";
 
 export type Client = {
     send: (s: string) => void;
 }
 
 const PROVIDER_CONFIGS: Record<string, { endpoint: string; apiKeyHeader: string; defaultModel: string }> = {
-    openrouter: { endpoint: 'https://openrouter.ai/api/v1/chat/completions',                              apiKeyHeader: 'Authorization', defaultModel: 'openai/gpt-5.4-mini' },
-    openai:     { endpoint: 'https://api.openai.com/v1/chat/completions',                                 apiKeyHeader: 'Authorization', defaultModel: 'gpt-5.4-mini' },
-    anthropic:  { endpoint: 'https://api.anthropic.com/v1/messages',                                      apiKeyHeader: 'x-api-key',     defaultModel: 'claude-opus-4-7' },
-    google:     { endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',   apiKeyHeader: 'Authorization', defaultModel: 'gemini-3.5-flash' },
-};
-
-const openHtmlViewTool = {
-    type: "function",
-    function: {
-        name: "attach_artifact",
-        description: "Attach a structured view using HTML content.",
-        parameters: {
-            type: "object",
-            properties: {
-                title: {
-                    type: "string",
-                    description: "The title for the window being shown. This should be short text, 2-4 words. I.e. 'CRM Contacts' or 'Edit Jim Monroe', etc."
-                },
-                windowId: {
-                    type: "number",
-                    description: "The window ID to display the content from the existing open windows, or 0 to create a new window.",
-                },
-                content: {
-                    type: "string",
-                    description: "The HTML content for the view to be shown. Should be a <div> tag. Use tailwindcss for styling. The background is already set to gray-100 and padding is applied in the parent. You don't need to set this for the content. Do not wrap in `. Call global js function doAction() with parameters describing what should be done to perform actions in handlers (buttons, etc). Do not add <script> tags just call doAction in a click handler etc. Do not enter dynamic content in the doAction params they are fetched for you just describe the action taken."
-                },
-            },
-            required: ["content"]
-        }
-    }
-};
-
-const queryDatabase = {
-    type: "function",
-    function: {
-        name: "query_db",
-        description: "Run a query on the sqlite DB.",
-        parameters: {
-            type: "object",
-            properties: {
-                query: {
-                    type: "string",
-                    description: "The sqlite query to run on the db. Could be to list all tables, get their schema, etc. Any SQLite query."
-                },
-            },
-            required: ["query"]
-        }
-    }
+    openrouter: { endpoint: 'https://openrouter.ai/api/v1/chat/completions', apiKeyHeader: 'Authorization', defaultModel: 'openai/gpt-5.4-nano' },
+    openai: { endpoint: 'https://api.openai.com/v1/chat/completions', apiKeyHeader: 'Authorization', defaultModel: 'gpt-5.4-mini' },
+    anthropic: { endpoint: 'https://api.anthropic.com/v1/messages', apiKeyHeader: 'x-api-key', defaultModel: 'claude-opus-4-7' },
+    google: { endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', apiKeyHeader: 'Authorization', defaultModel: 'gemini-3.5-flash' },
 };
 
 @Injectable()
@@ -69,6 +27,7 @@ export class ChatService {
         @InjectRepository(ChatMessageEntity) private readonly chatHistoryRepo: Repository<ChatMessageEntity>,
         @InjectRepository(WindowStateEntity) private readonly windowStateRepo: Repository<WindowStateEntity>,
         private databaseService: DatabaseService,
+        private anthropicService: AnthropicService,
     ) {
     }
 
@@ -278,7 +237,7 @@ export class ChatService {
             }
         } catch (e: any) {
             console.error('handleChat error:', e);
-            this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: { content: `⚠️ Error: ${e.message}`, from: 'System' } })));
+            this.clients.forEach(c => c.send(JSON.stringify({ event: 'message', data: { content: `Error: ${e.message}`, from: 'System' } })));
         }
     }
 
@@ -301,14 +260,16 @@ export class ChatService {
     }
 
     async runAi(messages: any[]) {
-        if (this.currentProvider === 'anthropic') {
-            return this.runAiAnthropic(messages);
-        }
-
-        const config = PROVIDER_CONFIGS[this.currentProvider] || PROVIDER_CONFIGS['openrouter'];
-        const model = this.currentModel || config.defaultModel;
         const apiKey = await this.loadApiKey();
         const activeWindows = await this.getWindowsSummary();
+
+        const config = PROVIDER_CONFIGS[this.currentProvider] || PROVIDER_CONFIGS['openrouter'];
+
+        const model = this.currentModel || config.defaultModel;
+
+        if (this.currentProvider === 'anthropic') {
+            return this.anthropicService.runAiAnthropic(messages, activeWindows, apiKey, model, this.prompts.chatPrompt);
+        }
 
         const authValue = `Bearer ${apiKey}`;
 
@@ -370,153 +331,6 @@ export class ChatService {
             return { tools: toolResults };
         }
     }
-
-    private async runAiAnthropic(messages: any[]) {
-        const activeWindows = await this.getWindowsSummary();
-        const apiKey = await this.loadApiKey();
-
-        const systemContent = [
-            this.prompts.chatPrompt,
-            'currently open windows: ' + JSON.stringify(activeWindows.map(w => ({ id: w.id, title: w.title, }))),
-        ].join('\n\n');
-
-        const anthropicMessages = this.convertToAnthropicMessages(messages);
-
-        const requestBody = {
-            model: this.currentModel,
-            max_tokens: 8096,
-            system: systemContent,
-            messages: anthropicMessages,
-            tools: this.convertToolsForAnthropic([openHtmlViewTool, queryDatabase]),
-            tool_choice: { type: 'auto' },
-        };
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            let detail = text;
-            try { detail = JSON.parse(text)?.error?.message ?? text; } catch {}
-            throw new Error(`Anthropic ${response.status}: ${detail}`);
-        }
-
-        const data = await response.json();
-        console.log(data);
-
-        const contentBlocks: any[] = data.content || [];
-        const textBlock = contentBlocks.find((b: any) => b.type === 'text');
-        const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
-
-        if (data.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
-            messages.push({ role: 'assistant', content: textBlock?.text || '' });
-            return { content: textBlock?.text || '' };
-        }
-
-        // Push to messages in OpenAI-like format so handleToolCall works unchanged
-        const tool_calls = toolUseBlocks.map((b: any) => ({
-            id: b.id,
-            type: 'function',
-            function: { name: b.name, arguments: JSON.stringify(b.input) },
-        }));
-        messages.push({ role: 'assistant', content: textBlock?.text || null, tool_calls });
-
-        const toolResults: any[] = [];
-        for (const b of toolUseBlocks) {
-            if (b.name === openHtmlViewTool.function.name) {
-                toolResults.push({ attachment: `\`${b.input.content}\``, title: b.input.title, windowId: b.input.windowId, callId: b.id });
-            }
-            if (b.name === queryDatabase.function.name) {
-                toolResults.push({ query: b.input.query, callId: b.id });
-            }
-        }
-
-        return { tools: toolResults };
-    }
-
-    private convertToAnthropicMessages(messages: any[]): any[] {
-        const result: any[] = [];
-
-        for (let i = 0; i < messages.length; i++) {
-            const msg = messages[i];
-
-            // Skip system messages — handled via top-level system field
-            if (msg.role === 'system') continue;
-
-            // Group consecutive tool messages into a single user message with tool_result blocks
-            if (msg.role === 'tool') {
-                const toolResults: any[] = [];
-                while (i < messages.length && messages[i].role === 'tool') {
-                    toolResults.push({
-                        type: 'tool_result',
-                        tool_use_id: messages[i].tool_call_id,
-                        content: messages[i].content || '(no output)',
-                    });
-                    i++;
-                }
-                i--; // compensate for the outer loop increment
-                result.push({ role: 'user', content: toolResults });
-                continue;
-            }
-
-            // Assistant message that made tool calls — convert to Anthropic tool_use blocks
-            if (msg.role === 'assistant' && msg.tool_calls) {
-                const content: any[] = [];
-                if (msg.content) content.push({ type: 'text', text: msg.content });
-                for (const tc of msg.tool_calls) {
-                    content.push({
-                        type: 'tool_use',
-                        id: tc.id,
-                        name: tc.function.name,
-                        input: typeof tc.function.arguments === 'string'
-                            ? JSON.parse(tc.function.arguments)
-                            : tc.function.arguments,
-                    });
-                }
-                result.push({ role: 'assistant', content });
-                continue;
-            }
-
-            // Skip messages with empty content — Anthropic rejects them
-            if (!msg.content) continue;
-
-            // Regular user or assistant text message
-            result.push({ role: msg.role, content: msg.content });
-        }
-
-        // Anthropic requires first message to be user — drop any leading assistant messages
-        while (result.length > 0 && result[0].role === 'assistant') {
-            result.shift();
-        }
-
-        // Merge consecutive same-role text messages (can happen after drops above)
-        const merged: any[] = [];
-        for (const msg of result) {
-            const prev = merged[merged.length - 1];
-            if (prev && prev.role === msg.role && typeof prev.content === 'string' && typeof msg.content === 'string') {
-                prev.content += '\n\n' + msg.content;
-            } else {
-                merged.push({ ...msg });
-            }
-        }
-
-        return merged;
-    }
-
-    private convertToolsForAnthropic(tools: any[]): any[] {
-        return tools.map(tool => ({
-            name: tool.function.name,
-            description: tool.function.description,
-            input_schema: tool.function.parameters,
-        }));
-    }
-
 
     async getWindowContent(windowId: number,) {
         const window = await this.windowStateRepo.findOne({ where: { id: windowId, } });

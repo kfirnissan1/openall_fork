@@ -5,7 +5,7 @@ import { marked } from "marked";
 import { useState } from "react";
 import DraggableWindow, { activeWindowStore } from "./draggable-window";
 import React from "react";
-import { ShareModal } from "./share-modal";
+import { ShareModal } from "./share/share-modal";
 
 class CounterStore {
     count = 0;

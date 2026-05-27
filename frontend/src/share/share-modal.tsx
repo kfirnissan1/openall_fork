@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { counterStore } from "./chat-box";
+import { counterStore } from "../chat-box";
 
 const PLATFORMS = [
     {
