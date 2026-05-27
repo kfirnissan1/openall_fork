@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useRef, useState } from "react";
-import { counterStore } from "./chat-box";
 import { ShareButton } from "./share/share-button";
+import { windowStateStore } from "./windows/windowState";
 
 export class ActiveWindowStore {
     activeWindow: number | null = null;
@@ -100,11 +100,11 @@ const DraggableWindow = observer(({ children, windowKey, title, data, minimized,
     const onMinimize = (e: any) => {
         e.preventDefault();
         e.stopPropagation();
-        counterStore.minimize(data);
+        windowStateStore.minimize(data);
     }
 
     const onClose = () => {
-        counterStore.closeWindow(data.id);
+        windowStateStore.closeWindow(data.id);
     }
 
     const isWindowCurrentlyActive = activeWindowStore.activeWindow === windowKey;

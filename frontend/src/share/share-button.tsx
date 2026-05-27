@@ -1,4 +1,4 @@
-import { counterStore } from "../chat-box";
+import { windowStateStore } from "../windows/windowState";
 
 export const ShareIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
@@ -20,7 +20,7 @@ export const ShareButton = ({ title, windowFrameRef, }: { title: string, windowF
         if (!windowFrameRef.current) return;
         try {
             const canvas = await (window as any).html2canvas(windowFrameRef.current, { allowTaint: true, useCORS: false, backgroundColor: '#ffffff', logging: false });
-            counterStore.setShareState({ active: true, imageDataUrl: canvas.toDataURL('image/png'), windowTitle: title });
+            windowStateStore.setShareState({ active: true, imageDataUrl: canvas.toDataURL('image/png'), windowTitle: title });
         } catch (err) {
             console.error('html2canvas failed:', err);
             // alert('Screenshot failed — see console for details.');

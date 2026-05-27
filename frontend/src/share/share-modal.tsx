@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { counterStore } from "../chat-box";
+import { windowStateStore } from "../windows/windowState";
 
 const PLATFORMS = [
     {
@@ -167,7 +167,7 @@ async function copyImageToClipboard(imageDataUrl: string): Promise<void> {
 }
 
 export const ShareModal = observer(() => {
-    const state = counterStore.shareState;
+    const state = windowStateStore.shareState;
     const [caption, setCaption] = useState("");
     const [copied, setCopied] = useState(false);
     const [copiedMessage, setCopiedMessage] = useState("");
@@ -202,7 +202,7 @@ export const ShareModal = observer(() => {
     };
 
     const handleClose = () => {
-        counterStore.setShareState(null);
+        windowStateStore.setShareState(null);
         setCaption("");
         setCopied(false);
     };
