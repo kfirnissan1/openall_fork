@@ -8,6 +8,9 @@ export class ChatConfigEntity {
     @Column()
     provider: string;
 
+    @Column({ nullable: true })
+    model: string;
+
     @CreateDateColumn()
     createdAt: Date;
 }

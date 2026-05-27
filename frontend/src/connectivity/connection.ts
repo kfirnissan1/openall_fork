@@ -98,7 +98,7 @@ export class Connection {
         }
     }
 
-    async saveConfig(config: { provider: string, apiKey: string, }) {
+    async saveConfig(config: { provider: string, apiKey: string, model: string }) {
         console.log('saveConfig');
         const api = (window as any).api;
         if (api) {

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, shell, clipboard, nativeImage } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import * as electronUpdater from 'electron-updater';
@@ -59,6 +59,15 @@ async function init() {
 
     ipcMain.handle('chat-service:sendMessage', async (_event, { msgType, data, }) => {
         return await chatGateway.handleMessage(msgType, data, client);
+    });
+
+    ipcMain.handle('shell:openExternal', async (_event, url) => {
+        await shell.openExternal(url);
+    });
+
+    ipcMain.handle('clipboard:writeImage', (_event, dataUrl) => {
+        const img = nativeImage.createFromDataURL(dataUrl);
+        clipboard.writeImage(img);
     });
 
     app.whenReady().then(() => {
