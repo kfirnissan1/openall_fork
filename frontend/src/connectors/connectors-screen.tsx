@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import DraggableWindow from "../draggable-window";
-import { counterStore } from "../chat-box";
+import { windowStateStore } from "../windows/windowState";
 
 export const SettingsContent = observer(() => {
 
@@ -21,11 +21,11 @@ export const SettingsContent = observer(() => {
         <div>The json configuration containing the MCPs to be used when executing AI commands</div>
         <div spellCheck="false" className="flex-1 rounded-xl bg-white/80 text-gray-600 border-gray-400 border p-2 my-2 whitespace-pre-wrap text-sm font-mono" contentEditable="true">{mcpContent}</div>
         <div className="flex justify-end">
-            <button onClick={() => {}}
+            <button onClick={() => { }}
                 className="w-32 mr-1 py-2 rounded-xl bg-gray-900/80 hover:bg-gray-900 text-white font-medium shadow-md transition">
                 Save
             </button>
-            <button onClick={() => {counterStore.setShowConnectors(false)}}
+            <button onClick={() => { windowStateStore.setShowConnectors(false) }}
                 className="w-32 ml-1 py-2 rounded-xl bg-gray-300/80 hover:bg-gray-300 text-black font-medium shadow-md transition">
                 Close
             </button>

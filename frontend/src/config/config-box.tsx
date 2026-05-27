@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import DraggableWindow from "../draggable-window";
-import { counterStore } from "../chat-box";
 import { makeAutoObservable } from "mobx";
+import { windowStateStore } from "../windows/windowState";
 
 const PROVIDERS = [
     { id: 'openrouter', label: 'OpenRouter',    placeholder: 'sk-or-...',  models: ['openai/gpt-5.5', 'openai/gpt-5.4', 'openai/gpt-5.4-mini', 'anthropic/claude-opus-4-7', 'anthropic/claude-sonnet-4-6', 'google/gemini-3.5-flash', 'google/gemini-3.1-pro-preview', 'meta-llama/llama-4-maverick', 'openai/gpt-5.4-nano', 'anthropic/claude-haiku-4-5'] },
@@ -74,11 +74,11 @@ export const ConfigContent = observer(() => {
             </div>
 
             <div className="pt-2 flex gap-2">
-                <button onClick={() => counterStore.hideConfig()}
+                <button onClick={() => windowStateStore.hideConfig()}
                     className="flex-1 py-2 rounded-xl bg-white/60 border border-white/40 hover:bg-white/80 text-zinc-700 font-medium shadow-sm transition">
                     Cancel
                 </button>
-                <button disabled={!configStore.apiKey} onClick={() => counterStore.saveConfig({ provider: configStore.selectedProvider, apiKey: configStore.apiKey, model: configStore.selectedModel })}
+                <button disabled={!configStore.apiKey} onClick={() => windowStateStore.saveConfig({ provider: configStore.selectedProvider, apiKey: configStore.apiKey, model: configStore.selectedModel })}
                     className="flex-1 py-2 rounded-xl bg-gray-900/80 disabled:bg-gray-300 disabled:text-gray-400 hover:bg-gray-900 text-white font-medium shadow-md transition">
                     Save
                 </button>

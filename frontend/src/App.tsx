@@ -1,24 +1,25 @@
 import { observer } from 'mobx-react-lite';
 import { activeWindowStore } from './draggable-window';
-import { ChatBox, counterStore } from './chat-box';
+import { ChatBox } from './chat-box';
 import Navbar from './navbar';
 import { ConfigBox } from './config/config-box';
 import { SettingsBox } from './settings/settings-box';
 import { ConnectorsScreen } from './connectors/connectors-screen';
+import { windowStateStore } from './windows/windowState';
 
 const MinimizedList = observer(() => {
     const onRestore = (w: any) => {
-        counterStore.restoreWindow(w.id);
+        windowStateStore.restoreWindow(w.id);
         activeWindowStore.setActiveWindow(w.id);
     }
 
     const onClose = (w: any) => {
-        counterStore.closeWindow(w.id);
+        windowStateStore.closeWindow(w.id);
     }
 
     return <div className="fixed z-30 right-4 bottom-4 flex flex-col gap-3">
         <div className="flex flex-col gap-2 p-2 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl">
-            {counterStore.windows.filter(w => w.minimized).map(w =>
+            {windowStateStore.windows.filter(w => w.minimized).map(w =>
                 <div key={w.id} className="group relative flex items-center">
 
                     <div className="flex items-center gap-3 px-3 py-2 pr-10 rounded-xl bg-white/70 border border-white/40 shadow-sm text-sm text-zinc-700 min-w-40 w-full hover:shadow-md transition">
@@ -77,11 +78,11 @@ let App = observer(() => {
             <div className="fixed left-4 top-4 text-4xl text-zinc-300/20 font-black pointer-events-none select-none">
                 openall
             </div>
-            {counterStore.initialized ? <Navbar /> : <></>}
-            {counterStore.showConfig ? <ConfigBox /> : <></>}
-            {counterStore.initialized ? <ChatBox /> : <></>}
-            {counterStore.showSettings ? <SettingsBox /> : <></>}
-            {counterStore.showConnectors ? <ConnectorsScreen /> : <></>}
+            {windowStateStore.initialized ? <Navbar /> : <></>}
+            {windowStateStore.showConfig ? <ConfigBox /> : <></>}
+            {windowStateStore.initialized ? <ChatBox /> : <></>}
+            {windowStateStore.showSettings ? <SettingsBox /> : <></>}
+            {windowStateStore.showConnectors ? <ConnectorsScreen /> : <></>}
             {/* <MessageList /> */}
             <MinimizedList />
 
