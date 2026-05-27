@@ -2,14 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useRef, useState } from "react";
 import { counterStore } from "./chat-box";
-
-const ShareIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
-        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-        <polyline points="16 6 12 2 8 6" />
-        <line x1="12" y1="2" x2="12" y2="15" />
-    </svg>
-);
+import { ShareButton } from "./share/share-button";
 
 export class ActiveWindowStore {
     activeWindow: number | null = null;
@@ -114,23 +107,6 @@ const DraggableWindow = observer(({ children, windowKey, title, data, minimized,
         counterStore.closeWindow(data.id);
     }
 
-    const onShare = async (e: any) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!(window as any).html2canvas) {
-            alert('html2canvas not loaded — check your network connection and refresh.');
-            return;
-        }
-        if (!windowFrameRef.current) return;
-        try {
-            const canvas = await (window as any).html2canvas(windowFrameRef.current, { allowTaint: true, useCORS: false, backgroundColor: '#ffffff', logging: false });
-            counterStore.setShareState({ active: true, imageDataUrl: canvas.toDataURL('image/png'), windowTitle: title });
-        } catch (err) {
-            console.error('html2canvas failed:', err);
-            alert('Screenshot failed — see console for details.');
-        }
-    };
-
     const isWindowCurrentlyActive = activeWindowStore.activeWindow === windowKey;
 
     const attention = false;
@@ -166,14 +142,11 @@ const DraggableWindow = observer(({ children, windowKey, title, data, minimized,
                         <div className="flex items-center gap-1 text-zinc-500">
                             {
                                 !modal ? <>
-                                    <button onPointerDown={onShare} className="flex items-center gap-1 px-2 h-6 rounded hover:bg-zinc-300/80 transition text-zinc-700 text-xs">
-                                        <ShareIcon />
-                                        Share
-                                    </button>
+                                    <ShareButton title={title} windowFrameRef={windowFrameRef} />
                                     <button onPointerDown={onMinimize} className="w-6 h-6 rounded hover:bg-zinc-300/80 flex items-center justify-center transition">
                                         &minus;
                                     </button>
-<button onPointerDown={onClose} className="w-6 h-6 rounded hover:bg-red-500/80 hover:text-white flex items-center justify-center transition">
+                                    <button onPointerDown={onClose} className="w-6 h-6 rounded hover:bg-red-500/80 hover:text-white flex items-center justify-center transition">
                                         &times;
                                     </button>
                                 </> : <></>
