@@ -14,6 +14,7 @@ class CounterStore {
     windows: any[] = [];
     showConfig = false;
     showSettings = false;
+    showConnectors = false;
     initialized = false;
     shareState: { active: boolean; imageDataUrl: string; windowTitle: string } | null = null;
 
@@ -104,6 +105,10 @@ class CounterStore {
 
     setShowSettings(show: boolean) {
         this.showSettings = show;
+    }
+
+    setShowConnectors(show: boolean) {
+        this.showConnectors = show;
     }
 
     doAction(activeWindowId: number, inputs: { [key: string]: string }, ...args: any[]) {

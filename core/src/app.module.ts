@@ -9,6 +9,7 @@ import * as os from 'node:os';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { HttpModule } from '@nestjs/axios';
 import { ChatConfigEntity } from './chat/entities/chat-config.entity';
+import { McpModule } from './mcp/mcp.module';
 
 const isElectron = !!process.versions.electron;
 
@@ -19,6 +20,7 @@ const dataDir = isElectron ? join(os.homedir(), '.openall/data') : 'data';
         HttpModule,
         StateModule,
         ChatModule,
+        McpModule,
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'static'),
         }),
