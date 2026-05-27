@@ -4,6 +4,7 @@ import { ChatBox, counterStore } from './chat-box';
 import Navbar from './navbar';
 import { ConfigBox } from './config/config-box';
 import { SettingsBox } from './settings/settings-box';
+import { ConnectorsScreen } from './connectors/connectors-screen';
 
 const MinimizedList = observer(() => {
     const onRestore = (w: any) => {
@@ -80,6 +81,7 @@ let App = observer(() => {
             {counterStore.showConfig ? <ConfigBox /> : <></>}
             {counterStore.initialized ? <ChatBox /> : <></>}
             {counterStore.showSettings ? <SettingsBox /> : <></>}
+            {counterStore.showConnectors ? <ConnectorsScreen /> : <></>}
             {/* <MessageList /> */}
             <MinimizedList />
 
