@@ -60,7 +60,6 @@ const MessageList = observer(() => {
         if (!result) return;
         if ('error' in result) { alert(result.error); return; }
         windowStateStore.sendChat(`[File: ${result.name}]\n\`\`\`\n${result.content}\n\`\`\``);
-        (document.querySelector('textarea') as HTMLTextAreaElement)?.focus();
     } catch (e) {
         console.error('requestFileUpload error:', e);
     }
